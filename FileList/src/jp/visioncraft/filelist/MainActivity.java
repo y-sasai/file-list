@@ -8,10 +8,12 @@ import jp.visioncraft.filelist.R.id;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -69,11 +71,22 @@ public class MainActivity extends Activity {
 					long arg3) {
 				// TODO Auto-generated method stub
 				File file = (File) arg0.getItemAtPosition(arg2);
-				Toast.makeText(MainActivity.this, file.toString(), Toast.LENGTH_SHORT).show();
+				//Toast.makeText(MainActivity.this, file.toString(), Toast.LENGTH_SHORT).show();
 				if (file.isDirectory()) {
 					MainActivity.dir = file;
 					MainActivity.this.finish();
 					Intent intent = new Intent(MainActivity.this, MainActivity.class);
+					startActivity(intent);
+				}
+				else if (file.isFile()) {
+					Intent intent = new Intent(Intent.ACTION_VIEW);
+					String extension = MimeTypeMap.getFileExtensionFromUrl(file.toString());
+					if (extension != "") {
+						String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+						if (mimeType != null) {
+							intent.setDataAndType(Uri.fromFile(file), mimeType);
+						}
+					}
 					startActivity(intent);
 				}
 			}
