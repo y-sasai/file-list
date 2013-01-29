@@ -21,10 +21,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.ads.*;
 
 public class MainActivity extends Activity {
+	private AdView adView;
 
 	public static File dir;
 	List<File> fileArrayList = new ArrayList<File>();
@@ -36,18 +39,14 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		// get directory, if dir is not directory
-		if (dir == null) {
+		if (dir == null || !dir.isDirectory()) {
 			dir = Environment.getExternalStorageDirectory();
-		} else {
-			if (!dir.isDirectory()) {
-				dir = Environment.getExternalStorageDirectory();
-			}
 		}
 
 		// directory exists?
 		if (!dir.exists()) {
 			if (dir.mkdir()) {
-				Toast.makeText(this, dir.toString() + " ÇçÏê¨ÇµÇ‹ÇµÇΩÅB", Toast.LENGTH_LONG).show();
+				Toast.makeText(this, dir.toString() + " was created.", Toast.LENGTH_LONG).show();
 			}
 		}
 		TextView textView = (TextView) findViewById(id.textView1);
@@ -101,14 +100,19 @@ public class MainActivity extends Activity {
 					//String extension = MimeTypeMap.getFileExtensionFromUrl(file.toString());
 					Uri uri = Uri.fromFile(file);
 					String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-					String mimeType = "";
 					if (extension != "") {
-						mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.US));
+						String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.US));
 						if (mimeType != null) {
+							Toast.makeText(MainActivity.this, mimeType, Toast.LENGTH_SHORT).show();
 							intent.setDataAndType(Uri.fromFile(file), mimeType);
+						} else {
+							Toast.makeText(MainActivity.this, "MIME type is null", Toast.LENGTH_SHORT).show();
+							return;
 						}
+					} else {
+						Toast.makeText(MainActivity.this, "file extension is empty string", Toast.LENGTH_SHORT).show();
+						return;
 					}
-					Toast.makeText(MainActivity.this, mimeType, Toast.LENGTH_SHORT).show();
 					// Check the intent whether the Activity be.
 					PackageManager pm = getPackageManager();
 					//ComponentName componentName = intent.resolveActivity(pm);
@@ -119,7 +123,7 @@ public class MainActivity extends Activity {
 						labelList.add(label);
 					}
 					if (!resolveInfoList.isEmpty()) {
-						Toast.makeText(MainActivity.this, labelList.toString(), Toast.LENGTH_LONG).show();
+						//Toast.makeText(MainActivity.this, labelList.toString(), Toast.LENGTH_LONG).show();
 						startActivity(intent);
 					} else {
 						Toast.makeText(MainActivity.this, "activity not found", Toast.LENGTH_SHORT).show();
@@ -127,6 +131,44 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+		
+		// Create the adView
+		adView = new AdView(this, AdSize.BANNER, "a1510748cc95c95");
+		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		adView.setLayoutParams(layoutParams);
+		
+		// Lookup your RelativeLayout assuming it's been given
+		// the attribute android:id="@+id/mainLayout"
+		RelativeLayout layout = (RelativeLayout) findViewById(R.id.mainLayout);
+		
+		// Add the adView to it
+		layout.addView(adView);
+		
+		// Initiate a generic request to load it with an ad
+		adView.loadAd(new AdRequest());
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (adView != null) {
+			adView.destroy();
+		}
+		super.onDestroy();
+	}
+
+	@Override
+	public void onBackPressed() {
+		// note: API level 5(Android 2.0)
+		File parent = dir.getParentFile();
+		if (parent != null) {
+			MainActivity.dir = parent;
+			MainActivity.this.finish();
+			Intent intent = new Intent(MainActivity.this, MainActivity.class);
+			startActivity(intent);
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	@Override
