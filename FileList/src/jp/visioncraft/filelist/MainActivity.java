@@ -1,12 +1,19 @@
 package jp.visioncraft.filelist;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import jp.visioncraft.filelist.R.id;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,14 +21,14 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.Menu;
+//import android.view.Menu;
 import android.view.View;
+import android.view.Window;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ads.*;
@@ -31,11 +38,14 @@ public class MainActivity extends Activity {
 
 	public static File dir;
 	List<File> fileArrayList = new ArrayList<File>();
-	List<String> fileNameList = new ArrayList<String>();
+	List<Map<String, String>> fileNameList = new ArrayList<Map<String, String>>();
 	
+	@SuppressLint("SimpleDateFormat")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Hide title bar.
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		
 		// get directory, if dir is not directory
@@ -55,29 +65,47 @@ public class MainActivity extends Activity {
 		// get parent, if dir is not root("/")
 		File parent = dir.getParentFile();
 		//ArrayAdapter<File> arrayAdapter = new ArrayAdapter<File>(this, R.layout.array_adapter, fileArrayList);
-		ListAdapter adapter = new ArrayAdapter<String>(this, R.layout.array_adapter, fileNameList);
+		//ListAdapter adapter = new ArrayAdapter<String>(this, R.layout.array_adapter, fileNameList);
 		if (parent != null) {
 			fileArrayList.add(parent);
-			fileNameList.add("..");
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("main", "..");
+			map.put("sub", "");
+			fileNameList.add(map);
 		}
 
-		// get file list
-		File[] fileList = dir.listFiles();
-		if (fileList != null) {
+		// Get the list of files.
+		File[] listFiles = dir.listFiles();
+		
+		if (listFiles != null) {
+			// Sort listFiles.
+			List<File> temp = Arrays.asList(listFiles);
+			Collections.sort(temp);
+			listFiles = (File[]) temp.toArray();
+
 			// show only file name
-			for (File f : fileList) {
+			for (File f : listFiles) {
 				fileArrayList.add(f);
 				String name = f.getName();
 				// add slash if f is directory.
 				if (f.isDirectory()) {
 					name += "/";
 				}
-				fileNameList.add(name);
+				Date date = new Date(f.lastModified());
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+				
+				Map<String, String> map = new HashMap<String, String>();
+				map.put("main", name);
+				map.put("sub", sdf.format(date));
+				fileNameList.add(map);
 			}
 			//fileArrayList.addAll(Arrays.asList(fileList));
 		}
+
 		ListView listView = (ListView) findViewById(id.listView1);
 		//listView.setAdapter(arrayAdapter);
+		SimpleAdapter adapter = new SimpleAdapter(this, fileNameList, R.layout.simple_list_item_2,
+				new String[]{"main", "sub"}, new int[]{R.id.text1, R.id.text2});
 		listView.setAdapter(adapter);
 		
 		// listen click
@@ -103,14 +131,14 @@ public class MainActivity extends Activity {
 					if (extension != "") {
 						String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.US));
 						if (mimeType != null) {
-							Toast.makeText(MainActivity.this, mimeType, Toast.LENGTH_SHORT).show();
+							Toast.makeText(MainActivity.this, mimeType, Toast.LENGTH_LONG).show();
 							intent.setDataAndType(Uri.fromFile(file), mimeType);
 						} else {
-							Toast.makeText(MainActivity.this, "MIME type is null", Toast.LENGTH_SHORT).show();
+							Toast.makeText(MainActivity.this, "Could not find MIME type.", Toast.LENGTH_LONG).show();
 							return;
 						}
 					} else {
-						Toast.makeText(MainActivity.this, "file extension is empty string", Toast.LENGTH_SHORT).show();
+						Toast.makeText(MainActivity.this, "Could not find MIME type.", Toast.LENGTH_LONG).show();
 						return;
 					}
 					// Check the intent whether the Activity be.
@@ -126,7 +154,7 @@ public class MainActivity extends Activity {
 						//Toast.makeText(MainActivity.this, labelList.toString(), Toast.LENGTH_LONG).show();
 						startActivity(intent);
 					} else {
-						Toast.makeText(MainActivity.this, "activity not found", Toast.LENGTH_SHORT).show();
+						Toast.makeText(MainActivity.this, "Could not open the file.", Toast.LENGTH_LONG).show();
 					}
 				}
 			}
@@ -171,11 +199,11 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		// Inflate the menu; this adds items to the action bar if it is present.
+//		getMenuInflater().inflate(R.menu.activity_main, menu);
+//		return true;
+//	}
 
 }
