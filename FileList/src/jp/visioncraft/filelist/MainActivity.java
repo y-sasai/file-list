@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import jp.visioncraft.filelist.R.id;
@@ -16,49 +15,59 @@ import jp.visioncraft.filelist.R.id;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 //import android.view.Menu;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-import com.google.ads.*;
 
 public class MainActivity extends Activity {
-	private AdView adView;
 
 	public static File dir;
 	List<File> fileArrayList = new ArrayList<File>();
 	List<Map<String, String>> fileNameList = new ArrayList<Map<String, String>>();
+	private final static String MY_PREFS = "FileList";
 	
 	@SuppressLint("SimpleDateFormat")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// Hide title bar.
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		// Hide title bar. -> styles.xml
+		//requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		
-		// get directory, if dir is not directory
 		if (dir == null || !dir.isDirectory()) {
-			dir = Environment.getExternalStorageDirectory();
-		}
-
-		// directory exists?
-		if (!dir.exists()) {
-			if (dir.mkdir()) {
-				Toast.makeText(this, dir.toString() + " was created.", Toast.LENGTH_LONG).show();
+			// Get the saved directory.
+			SharedPreferences mySharedpreferences = getSharedPreferences(MY_PREFS, Activity.MODE_PRIVATE);
+			String lastDir = mySharedpreferences.getString("dir", null);
+			if (lastDir != null) {
+				dir = new File(lastDir);
+			} else {
+				// Gets the Android external storage directory (such as SD card).
+				String state = Environment.getExternalStorageState();
+				if (Environment.MEDIA_MOUNTED.equals(state)) {
+					dir = Environment.getExternalStorageDirectory();
+				}
 			}
 		}
+
+		// If dir is not exists, set "/".
+		if (!dir.exists()) {
+			dir = new File("/");
+		}
+		
+		// Save current directory to SharedPreferences.
+		SharedPreferences mySharedPreferences = getSharedPreferences(MY_PREFS, Activity.MODE_PRIVATE);
+		SharedPreferences.Editor editor = mySharedPreferences.edit();
+		editor.putString("dir", dir.toString());
+		editor.commit();
+
 		TextView textView = (TextView) findViewById(id.textView1);
 		textView.setText(dir.toString());
 		
@@ -122,67 +131,13 @@ public class MainActivity extends Activity {
 					MainActivity.this.finish();
 					Intent intent = new Intent(MainActivity.this, MainActivity.class);
 					startActivity(intent);
-				}
-				else if (file.isFile()) {
-					Intent intent = new Intent(Intent.ACTION_VIEW);
-					//String extension = MimeTypeMap.getFileExtensionFromUrl(file.toString());
-					Uri uri = Uri.fromFile(file);
-					String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-					if (extension != "") {
-						String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase(Locale.US));
-						if (mimeType != null) {
-							Toast.makeText(MainActivity.this, mimeType, Toast.LENGTH_LONG).show();
-							intent.setDataAndType(Uri.fromFile(file), mimeType);
-						} else {
-							Toast.makeText(MainActivity.this, "Could not find MIME type.", Toast.LENGTH_LONG).show();
-							return;
-						}
-					} else {
-						Toast.makeText(MainActivity.this, "Could not find MIME type.", Toast.LENGTH_LONG).show();
-						return;
-					}
-					// Check the intent whether the Activity be.
-					PackageManager pm = getPackageManager();
-					//ComponentName componentName = intent.resolveActivity(pm);
-					List<ResolveInfo> resolveInfoList = pm.queryIntentActivities(intent, 0);
-					List<CharSequence> labelList = new ArrayList<CharSequence>();
-					for (ResolveInfo ri : resolveInfoList) {
-						CharSequence label = ri.loadLabel(pm);
-						labelList.add(label);
-					}
-					if (!resolveInfoList.isEmpty()) {
-						//Toast.makeText(MainActivity.this, labelList.toString(), Toast.LENGTH_LONG).show();
-						startActivity(intent);
-					} else {
-						Toast.makeText(MainActivity.this, "Could not open the file.", Toast.LENGTH_LONG).show();
-					}
+				} else {
+					Intent intent = new Intent(MainActivity.this, FileInfoActivity.class);
+					intent.putExtra("file", file.toString());
+					startActivity(intent);
 				}
 			}
 		});
-		
-		// Create the adView
-		adView = new AdView(this, AdSize.BANNER, "a1510748cc95c95");
-		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-		adView.setLayoutParams(layoutParams);
-		
-		// Lookup your RelativeLayout assuming it's been given
-		// the attribute android:id="@+id/mainLayout"
-		RelativeLayout layout = (RelativeLayout) findViewById(R.id.mainLayout);
-		
-		// Add the adView to it
-		layout.addView(adView);
-		
-		// Initiate a generic request to load it with an ad
-		adView.loadAd(new AdRequest());
-	}
-
-	@Override
-	protected void onDestroy() {
-		if (adView != null) {
-			adView.destroy();
-		}
-		super.onDestroy();
 	}
 
 	@Override
@@ -190,20 +145,39 @@ public class MainActivity extends Activity {
 		// note: API level 5(Android 2.0)
 		File parent = dir.getParentFile();
 		if (parent != null) {
-			MainActivity.dir = parent;
-			MainActivity.this.finish();
+			dir = parent;
+			finish();
 			Intent intent = new Intent(MainActivity.this, MainActivity.class);
 			startActivity(intent);
 		} else {
+			dir = null;
 			super.onBackPressed();
 		}
 	}
 
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.activity_main, menu);
-//		return true;
-//	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.options_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.terminate_app:
+			dir = null;
+			super.onBackPressed();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	public void finish() {
+		super.finish();
+		overridePendingTransition(0, 0);
+	}
 
 }

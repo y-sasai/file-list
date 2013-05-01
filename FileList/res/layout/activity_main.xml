@@ -3,7 +3,6 @@
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
     tools:context=".MainActivity" >
 
     <TextView
@@ -17,9 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/textView1"
-        android:layout_marginBottom="50dp"
-        android:cacheColorHint="@android:color/transparent" >
+        android:layout_below="@+id/textView1" >
 
     </ListView>
 

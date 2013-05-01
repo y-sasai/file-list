@@ -1,8 +1,6 @@
 
     <resources>
-        <color name="background">#000</color>
         <color name="text">#FFF</color>
-        <color name="listview_text">#CCC</color>
         <color name="text_file_name">#FFF</color>
         <color name="text_date_time">#CCC</color>
     </resources>
