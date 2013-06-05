@@ -14,6 +14,8 @@ import jp.visioncraft.filelist.R.id;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -169,6 +171,24 @@ public class MainActivity extends Activity {
 			dir = null;
 			super.onBackPressed();
 			return true;
+		case R.id.shortcut:
+			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+			builder.setTitle("Shortcut")
+			.setItems(getUsefulDirectory(), new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String[] dirs = getUsefulDirectory();
+					MainActivity.dir = new File(dirs[which]);
+					MainActivity.this.finish();
+					Intent intent = new Intent(MainActivity.this, MainActivity.class);
+					startActivity(intent);
+					
+				}
+			});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -180,4 +200,31 @@ public class MainActivity extends Activity {
 		overridePendingTransition(0, 0);
 	}
 
+	public String[] getUsefulDirectory() {
+		List<File> dirs = new ArrayList<File>();
+		dirs.add(Environment.getDataDirectory());
+		dirs.add(Environment.getDownloadCacheDirectory());
+		dirs.add(Environment.getExternalStorageDirectory());
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_ALARMS));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_NOTIFICATIONS));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PODCASTS));
+		dirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RINGTONES));
+		dirs.add(Environment.getRootDirectory());
+		//
+		//dirs.add(this.getCacheDir());
+		//dirs.add(this.getExternalCacheDir());
+		//dirs.add(this.getFilesDir());
+		//dirs.add(this.getObbDir()); // API level 11
+		
+		List<String> strs = new ArrayList<String>();
+		for (File f : dirs) {
+			strs.add(f.toString());
+		}
+		return strs.toArray(new String[0]);
+	}
 }
