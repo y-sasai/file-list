@@ -10,8 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.visioncraft.filelist.R.id;
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
 
+import jp.visioncraft.filelist.R.id;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -35,6 +39,7 @@ public class MainActivity extends Activity {
 	List<File> fileArrayList = new ArrayList<File>();
 	List<Map<String, String>> fileNameList = new ArrayList<Map<String, String>>();
 	private final static String MY_PREFS = "FileList";
+	private AdView adView;
 	
 	@SuppressLint("SimpleDateFormat")
 	@Override
@@ -140,6 +145,41 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+		
+		// Delete file with long click.
+		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+			File file = null;
+			
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				file = fileArrayList.get(position);
+				if (file.isFile()) {
+					// Show confirm dialog.
+					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+					builder.setTitle("Delete File").setMessage(file.getName())
+						.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								// Delete file.
+								file.delete();
+								// Update file list.
+								restartActivity();
+							}
+						})
+						.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+							}
+						})
+						.create().show();
+				}
+				return true;
+			}
+		});
+		
+		createAdView();
 	}
 
 	@Override
@@ -226,5 +266,30 @@ public class MainActivity extends Activity {
 			strs.add(f.toString());
 		}
 		return strs.toArray(new String[0]);
+	}
+	
+	// Restart this activity.
+	void restartActivity() {
+		finish();
+		Intent intent = new Intent(MainActivity.this, MainActivity.class);
+		startActivity(intent);
+	}
+	
+	public void createAdView() {
+		// Create the adView
+		adView = new AdView(this, AdSize.BANNER, "a1510748cc95c95");
+		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		adView.setLayoutParams(layoutParams);
+		
+		// Lookup your RelativeLayout assuming it's been given
+		// the attribute android:id="@+id/mainLayout"
+		RelativeLayout layout = (RelativeLayout) findViewById(R.id.mainLayout);
+		
+		// Add the adView to it
+		layout.addView(adView);
+		
+		// Initiate a generic request to load it with an ad
+		adView.loadAd(new AdRequest());
 	}
 }

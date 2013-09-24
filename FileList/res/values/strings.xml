@@ -7,4 +7,8 @@
 
     <string name="start_activity_button">Start</string>
 
+    <string name="menu_shortcut">Shortcut</string>
+
+    <string name="menu_terminate">Terminate</string>
+
 </resources>

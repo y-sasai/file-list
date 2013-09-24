@@ -6,8 +6,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.google.ads.AdRequest;
-import com.google.ads.AdSize;
 import com.google.ads.AdView;
 
 import android.app.Activity;
@@ -20,7 +18,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -112,8 +109,6 @@ public class FileInfoActivity extends Activity {
 	    textView1.setText(info);
 	    // クリックしたときに文字が灰色になるので、ScrollViewに変更した。
 	    //textView1.setMovementMethod(ScrollingMovementMethod.getInstance());
-	    
-	    createAdView();
 	}
 
 	public void openFile(View view) {
@@ -132,24 +127,6 @@ public class FileInfoActivity extends Activity {
 		}
 		intent.setClassName(info.activityInfo.packageName, info.activityInfo.name);
 		startActivity(intent);
-	}
-	
-	public void createAdView() {
-		// Create the adView
-		adView = new AdView(this, AdSize.BANNER, "a1510748cc95c95");
-		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-		adView.setLayoutParams(layoutParams);
-		
-		// Lookup your RelativeLayout assuming it's been given
-		// the attribute android:id="@+id/mainLayout"
-		RelativeLayout layout = (RelativeLayout) findViewById(R.id.fileInfoLayout);
-		
-		// Add the adView to it
-		layout.addView(adView);
-		
-		// Initiate a generic request to load it with an ad
-		adView.loadAd(new AdRequest());
 	}
 	
 	@Override

@@ -43,6 +43,8 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f050000;
+        public static final int menu_shortcut=0x7f050003;
+        public static final int menu_terminate=0x7f050004;
         public static final int spinner_prompt=0x7f050001;
         public static final int start_activity_button=0x7f050002;
     }
