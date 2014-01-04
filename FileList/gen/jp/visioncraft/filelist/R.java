@@ -43,6 +43,10 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f050000;
+        public static final int cancel=0x7f050007;
+        public static final int delete=0x7f050006;
+        public static final int delete_directory=0x7f050008;
+        public static final int delete_file=0x7f050005;
         public static final int menu_shortcut=0x7f050003;
         public static final int menu_terminate=0x7f050004;
         public static final int spinner_prompt=0x7f050001;

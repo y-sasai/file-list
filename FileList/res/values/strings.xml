@@ -10,5 +10,9 @@
     <string name="menu_shortcut">Shortcut</string>
 
     <string name="menu_terminate">Terminate</string>
+    <string name="delete_file">Delete File</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_directory">Delete Directory</string>
 
 </resources>

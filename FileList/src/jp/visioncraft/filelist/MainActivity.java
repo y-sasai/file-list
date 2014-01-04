@@ -1,6 +1,7 @@
 package jp.visioncraft.filelist;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -155,20 +156,31 @@ public class MainActivity extends Activity {
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				file = fileArrayList.get(position);
-				if (file.isFile()) {
+				// TODO delete if statement.
+//				if (file.isFile()) {
+				if (true) {
+					// Set title string.
+					int titleId = R.string.delete_file;
+					if (file.isDirectory()) {
+						titleId = R.string.delete_directory;
+					}
 					// Show confirm dialog.
 					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-					builder.setTitle("Delete File").setMessage(file.getName())
-						.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+					builder.setTitle(titleId).setMessage(file.getName())
+						.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								// Delete file.
-								file.delete();
+								if (file.isFile()) {
+									// Delete file.
+									file.delete();
+								} else if (file.isDirectory()) {
+									deleteDirectory(file.getPath());
+								}
 								// Update file list.
 								restartActivity();
 							}
 						})
-						.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+						.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 							}
@@ -213,7 +225,7 @@ public class MainActivity extends Activity {
 			return true;
 		case R.id.shortcut:
 			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-			builder.setTitle("Shortcut")
+			builder.setTitle(R.string.menu_shortcut)
 			.setItems(getUsefulDirectory(), new DialogInterface.OnClickListener() {
 				
 				@Override
@@ -291,5 +303,17 @@ public class MainActivity extends Activity {
 		
 		// Initiate a generic request to load it with an ad
 		adView.loadAd(new AdRequest());
+	}
+	
+	// Delete directory.
+	public void deleteDirectory(String path) {
+		Runtime runtime = Runtime.getRuntime();
+		String cmd = "rm -R " + path;
+		try {
+			runtime.exec(cmd);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

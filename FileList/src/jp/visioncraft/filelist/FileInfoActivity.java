@@ -107,7 +107,7 @@ public class FileInfoActivity extends Activity {
 
 	    TextView textView1 = (TextView) findViewById(R.id.textView1);
 	    textView1.setText(info);
-	    // クリックしたときに文字が灰色になるので、ScrollViewに変更した。
+	    // 繧ｯ繝ｪ繝�け縺励◆縺ｨ縺阪↓譁�ｭ励′轣ｰ濶ｲ縺ｫ縺ｪ繧九�縺ｧ縲ヾcrollView縺ｫ螟画峩縺励◆縲�
 	    //textView1.setMovementMethod(ScrollingMovementMethod.getInstance());
 	}
 
